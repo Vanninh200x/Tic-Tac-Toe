@@ -2,9 +2,9 @@
 
 ## Tóm tắt
 
-Ước lượng sơ bộ cho một game bàn cờ 2D viết bằng Flutter, với game engine thuần Dart, chơi hai người trên cùng thiết bị và chơi với AI. Bàn cờ hỗ trợ các kích thước 3×3, 5×5, 15×15, 20×20 và kích thước tùy chỉnh; luật thắng được cấu hình theo số quân liên tiếp.
+Game bàn cờ 2D viết bằng Flutter, với game engine thuần Dart, chơi hai người trên cùng thiết bị, chơi với AI và đấu trực tiếp qua Bluetooth. Bàn cờ hỗ trợ kích thước 3×3, 5×5, 15×15, 20×20 và kích thước tùy chỉnh; luật thắng được cấu hình theo số quân liên tiếp.
 
-Đây là estimate theo **ngày công của một lập trình viên Flutter có kinh nghiệm**. Khoảng thời gian thực tế phụ thuộc vào việc chốt luật game, thiết kế giao diện, thiết bị kiểm thử và lựa chọn Bluetooth.
+Ước lượng thời gian bên dưới là **ngày công của một lập trình viên Flutter có kinh nghiệm**; kết nối Bluetooth cần được xác nhận trên thiết bị Android thật.
 
 ## Phạm vi dự kiến
 
@@ -18,7 +18,7 @@
 - Bàn cờ được vẽ bằng `CustomPainter`, hỗ trợ chạm chọn ô, kéo và zoom.
 - Cài đặt và thống kê cơ bản lưu cục bộ bằng SharedPreferences.
 - Unit test cho luật, kiểm tra nước đi, phát hiện thắng/hòa và các trường hợp biên.
-- Khảo sát Bluetooth và kiểm thử kết nối trên thiết bị Android thật; phạm vi triển khai phụ thuộc phương án kết nối được chọn.
+- Chế độ Bluetooth Classic trực tiếp qua RFCOMM, không cần Internet; kiểm thử liên thiết bị cần hai điện thoại Android thật.
 
 ## Ngoài phạm vi
 
@@ -46,16 +46,16 @@
 
 Các khoảng trên là ngày công và có thể chồng lấn giữa một số hạng mục sau khi game domain và giao diện đã ổn định.
 
-## Bluetooth — cần chốt phương án
+## Bluetooth trực tiếp — RFCOMM
 
-Estimate Bluetooth chưa được cộng vào phần cốt lõi. Plugin, quyền Android, luồng ghép đôi và khả năng tương thích cần được xác minh bằng prototype trên hai điện thoại thật.
+Ứng dụng có luồng tạo phòng và tham gia phòng bằng Bluetooth Classic RFCOMM. Máy chủ phát dịch vụ Boardly với UUID riêng; máy khách tìm thiết bị, ghép đôi khi cần, kết nối bảo mật và nhận cấu hình bàn từ máy chủ. Nước đi, lượt hiện tại và lệnh chơi lại được đồng bộ qua kết nối trực tiếp, không dùng Wi-Fi, Internet hay backend.
 
 | Phương án | Phạm vi | Ước lượng bổ sung |
 |---|---|---:|
-| Kết nối trực tiếp, không cần Internet | Khảo sát plugin, ghép đôi/kết nối, đồng bộ nước đi, xử lý mất kết nối và kiểm thử thiết bị | 5–10 ngày |
+| Kết nối trực tiếp, không cần Internet | RFCOMM, ghép đôi/kết nối, đồng bộ nước đi và xử lý mất kết nối | 5–10 ngày |
 | Chơi từ xa qua Internet | Thiết kế backend hoặc dịch vụ realtime, đồng bộ trạng thái, xử lý reconnect và kiểm thử mạng | 10–18 ngày trở lên |
 
-Phương án Bluetooth trực tiếp chỉ phù hợp khi hai thiết bị ở gần và hệ điều hành/plugin hỗ trợ cách kết nối đã chọn. Chơi từ xa không phải là Bluetooth; cần một kiến trúc mạng riêng. Vì vậy chưa thể đưa ra tổng estimate chắc chắn cho phần nhiều người chơi cho đến khi chốt lựa chọn này.
+Máy chủ cần chấp nhận hộp thoại hệ thống để hiển thị Bluetooth trong tối đa 5 phút. Hai điện thoại nên được ghép đôi trong cài đặt Bluetooth nếu không nhìn thấy nhau; Android 11 trở xuống còn yêu cầu bật dịch vụ vị trí khi quét. Bluetooth Classic server mode không được hỗ trợ trên iOS trong plugin hiện tại; tính năng này nhắm tới Android. Chơi từ xa không phải là Bluetooth và cần một kiến trúc mạng riêng.
 
 ## Tổng kế hoạch tham khảo
 
@@ -92,7 +92,7 @@ https://play.google.com/store/apps/details?id=onetap.game.tictactoe
 3. Làm UI bàn cờ, menu, cài đặt và kết quả.
 4. Thêm AI; đo thời gian phản hồi ở các kích thước bàn mục tiêu.
 5. Thêm chế độ hai người cùng thiết bị và lưu cài đặt/thống kê.
-6. Làm prototype Bluetooth trên hai thiết bị; sau đó mới chốt estimate và triển khai đầy đủ.
+6. Kiểm thử ghép đôi, tạo phòng, đồng bộ lượt và khôi phục sau ngắt kết nối trên hai điện thoại Android thật.
 7. Kiểm thử hồi quy và tạo Android App Bundle.
 
 > Estimate này là bản sơ bộ dựa trên mô tả hiện tại. Các hạng mục Bluetooth, luật cụ thể và mức độ AI cần được xác nhận trước khi chốt kế hoạch phát hành.
