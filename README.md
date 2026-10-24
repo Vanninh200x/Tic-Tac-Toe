@@ -2,6 +2,8 @@
 
 ## Tóm tắt
 
+> Ghi chú: tài liệu này giữ nguyên vai trò estimate/phạm vi tham khảo. Prototype giao diện được cung cấp trong ZIP có thêm một số lựa chọn hiển thị; chúng được đưa vào app khi phù hợp. Bluetooth trong prototype chỉ là giao diện demo, chưa phải kết nối thiết bị.
+
 Ước lượng sơ bộ cho một game bàn cờ 2D viết bằng Flutter, với game engine thuần Dart, chơi hai người trên cùng thiết bị và chơi với AI. Bàn cờ hỗ trợ các kích thước 3×3, 5×5, 15×15, 20×20 và kích thước tùy chỉnh; luật thắng được cấu hình theo số quân liên tiếp.
 
 Đây là estimate theo **ngày công của một lập trình viên Flutter có kinh nghiệm**. Khoảng thời gian thực tế phụ thuộc vào việc chốt luật game, thiết kế giao diện, thiết bị kiểm thử và lựa chọn Bluetooth.
