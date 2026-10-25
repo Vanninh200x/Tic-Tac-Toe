@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../models/game_enums.dart';
 
 class ThemeConfig {
@@ -103,6 +105,7 @@ class AppTheme {
         onError: Colors.white,
       ),
       useMaterial3: true,
+      fontFamily: GoogleFonts.manrope().fontFamily,
     );
   }
 }

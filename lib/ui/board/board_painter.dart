@@ -1,5 +1,7 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/game_enums.dart';
@@ -121,7 +123,7 @@ class BoardPainter extends CustomPainter {
       );
     }
 
-    // 5. Highlight ô vừa đánh gần nhất (Last Move)
+    // 5. Highlight the latest move for both X and O with a matching cell frame.
     if (lastMove != null && _isValidCoord(lastMove!, boardSize)) {
       final cellRect = Rect.fromLTWH(
         coordinateOffset + lastMove!.col * cellSize + 4,
@@ -177,7 +179,7 @@ class BoardPainter extends CustomPainter {
       }
     }
 
-    // 7. Vẽ quân cờ X và O to, sắc nét, rực rỡ
+    // 7. Vẽ quân X/O dạng nét sạch, cân đối và rõ trên cả bàn nhỏ lẫn lớn.
     for (var r = 0; r < boardSize; r++) {
       for (var c = 0; c < boardSize; c++) {
         final player = board[r][c];
@@ -187,7 +189,7 @@ class BoardPainter extends CustomPainter {
           coordinateOffset + c * cellSize + cellSize / 2,
           coordinateOffset + r * cellSize + cellSize / 2,
         );
-        final radius = (cellSize / 2) * 0.72;
+        final radius = cellSize * 0.31;
 
         if (player == PlayerType.x) {
           _drawX(canvas, center, radius);
@@ -220,7 +222,8 @@ class BoardPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      final x = coordinateOffset + c * cellSize + (cellSize - textPainter.width) / 2;
+      final x =
+          coordinateOffset + c * cellSize + (cellSize - textPainter.width) / 2;
       textPainter.paint(canvas, Offset(x, 4));
     }
 
@@ -233,13 +236,14 @@ class BoardPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      final y = coordinateOffset + r * cellSize + (cellSize - textPainter.height) / 2;
+      final y =
+          coordinateOffset + r * cellSize + (cellSize - textPainter.height) / 2;
       textPainter.paint(canvas, Offset(4, y));
     }
   }
 
   void _drawX(Canvas canvas, Offset center, double radius) {
-    final strokeWidth = max(4.0, radius * 0.32);
+    final strokeWidth = (radius * 0.19).clamp(2.0, 7.0).toDouble();
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     // Nét chính có Gradient sắc nét
@@ -253,48 +257,38 @@ class BoardPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
-    // Đổ bóng nhẹ phía dưới quân cờ
+    // Viền sáng mảnh giúp quân tách khỏi lưới mà không làm nét bị nhoè.
     final shadowPaint = Paint()
-      ..color = AppColors.cyanNeon.withValues(alpha: 0.35)
-      ..strokeWidth = strokeWidth + 2
+      ..color = Colors.white.withValues(alpha: 0.75)
+      ..strokeWidth = strokeWidth + 2.4
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+      ..strokeJoin = StrokeJoin.round;
 
-    canvas.drawLine(
-      Offset(center.dx - radius, center.dy - radius),
-      Offset(center.dx + radius, center.dy + radius),
-      shadowPaint,
-    );
-    canvas.drawLine(
-      Offset(center.dx + radius, center.dy - radius),
-      Offset(center.dx - radius, center.dy + radius),
-      shadowPaint,
-    );
+    final startA = Offset(center.dx - radius, center.dy - radius);
+    final endA = Offset(center.dx + radius, center.dy + radius);
+    final startB = Offset(center.dx + radius, center.dy - radius);
+    final endB = Offset(center.dx - radius, center.dy + radius);
 
-    canvas.drawLine(
-      Offset(center.dx - radius, center.dy - radius),
-      Offset(center.dx + radius, center.dy + radius),
-      mainPaint,
-    );
-    canvas.drawLine(
-      Offset(center.dx + radius, center.dy - radius),
-      Offset(center.dx - radius, center.dy + radius),
-      mainPaint,
-    );
+    canvas.drawLine(startA, endA, shadowPaint);
+    canvas.drawLine(startB, endB, shadowPaint);
+
+    canvas.drawLine(startA, endA, mainPaint);
+    canvas.drawLine(startB, endB, mainPaint);
   }
 
   void _drawO(Canvas canvas, Offset center, double radius) {
-    final strokeWidth = max(4.0, radius * 0.32);
-    final rect = Rect.fromCircle(center: center, radius: radius);
+    final strokeWidth = (radius * 0.19).clamp(2.0, 7.0).toDouble();
+    final ringRadius = radius * 0.94;
+    final rect = Rect.fromCircle(center: center, radius: ringRadius);
 
-    // Đổ bóng nhẹ
-    final shadowPaint = Paint()
-      ..color = AppColors.coralNeon.withValues(alpha: 0.35)
-      ..strokeWidth = strokeWidth + 2
+    // Nền trắng mảnh tạo độ tương phản trên đường kẻ của bàn.
+    final outlinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.8)
+      ..strokeWidth = strokeWidth + 2.4
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawCircle(center, radius, shadowPaint);
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, ringRadius, outlinePaint);
 
     // Vòng tròn gradient hoàng hôn
     final mainPaint = Paint()
@@ -304,8 +298,23 @@ class BoardPainter extends CustomPainter {
         end: Alignment.bottomLeft,
       ).createShader(rect)
       ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, ringRadius, mainPaint);
+
+    // Tiny highlight gives O a polished glass-like finish without reducing legibility.
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.72)
+      ..strokeWidth = (strokeWidth * 0.28).clamp(1.0, 2.0).toDouble()
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
-    canvas.drawCircle(center, radius, mainPaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: ringRadius),
+      -pi * 0.82,
+      pi * 0.32,
+      false,
+      highlightPaint,
+    );
   }
 
   void _drawWinningLine(Canvas canvas, WinResult win, int boardSize) {
@@ -321,7 +330,9 @@ class BoardPainter extends CustomPainter {
       coordinateOffset + lastCoord.row * cellSize + cellSize / 2,
     );
 
-    final lineColor = win.winner == PlayerType.x ? AppColors.cyanNeon : AppColors.coralNeon;
+    final lineColor = win.winner == PlayerType.x
+        ? AppColors.cyanNeon
+        : AppColors.coralNeon;
 
     // Laser glow line
     final laserGlow = Paint()
@@ -340,9 +351,29 @@ class BoardPainter extends CustomPainter {
   }
 
   bool _isValidCoord(CellCoord coord, int size) {
-    return coord.row >= 0 && coord.row < size && coord.col >= 0 && coord.col < size;
+    return coord.row >= 0 &&
+        coord.row < size &&
+        coord.col >= 0 &&
+        coord.col < size;
   }
 
   @override
-  bool shouldRepaint(covariant BoardPainter oldDelegate) => true;
+  bool shouldRepaint(covariant BoardPainter oldDelegate) {
+    final oldTheme = oldDelegate.themeConfig;
+    final theme = themeConfig;
+    return oldDelegate.lastMove != lastMove ||
+        oldDelegate.hintMove != hintMove ||
+        oldDelegate.winResult != winResult ||
+        oldDelegate.showCoordinates != showCoordinates ||
+        oldDelegate.cellSize != cellSize ||
+        oldDelegate.coordinateOffset != coordinateOffset ||
+        oldTheme.backgroundColor != theme.backgroundColor ||
+        oldTheme.boardBackgroundColor != theme.boardBackgroundColor ||
+        oldTheme.gridLineColor != theme.gridLineColor ||
+        oldTheme.isDark != theme.isDark ||
+        oldTheme.primaryTextColor != theme.primaryTextColor ||
+        oldTheme.secondaryTextColor != theme.secondaryTextColor ||
+        oldTheme.xPrimaryColor != theme.xPrimaryColor ||
+        oldTheme.oPrimaryColor != theme.oPrimaryColor;
+  }
 }

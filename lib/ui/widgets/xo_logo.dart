@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
 
-/// Logo XO cao cấp, hiện đại với chữ X và O có chiều cao bằng nhau tuyệt đối (52px),
-/// hoàn thiện hiệu ứng Neon 3D, bóng đổ đa lớp và khung viền gradient sang trọng.
+/// Logo XO with a bright game-board tile and crisp, dimensional lettering.
 class XOLogoWidget extends StatefulWidget {
   final bool isDark;
   final double size;
@@ -52,73 +51,49 @@ class _XOLogoWidgetState extends State<XOLogoWidget>
           width: size,
           height: size,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            gradient: LinearGradient(
+            borderRadius: BorderRadius.circular(size * 0.29),
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF1E294B), const Color(0xFF0F172A)]
-                  : [Colors.white, const Color(0xFFF8FAFC)],
+              colors: [Color(0xFF38BDF8), Color(0xFF2563EB), Color(0xFF22D3EE)],
             ),
-            border: Border.all(
-              color: isDark ? Colors.white24 : const Color(0xFFE2E8F0),
-              width: 2.2,
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.72), width: 2.5),
             boxShadow: [
-              // Cyan glow (trái)
               BoxShadow(
-                color: AppColors.cyanNeon.withValues(
-                  alpha: isDark
-                      ? (0.28 + 0.12 * glowFactor)
-                      : (0.16 + 0.08 * glowFactor),
-                ),
-                blurRadius: 26 + 6 * glowFactor,
-                spreadRadius: 2,
-                offset: const Offset(-5, 4),
+                color: AppColors.cyanNeon.withValues(alpha: 0.28 + 0.12 * glowFactor),
+                blurRadius: 24 + 8 * glowFactor,
+                spreadRadius: 1,
+                offset: const Offset(0, 9),
               ),
-              // Coral glow (phải)
               BoxShadow(
-                color: AppColors.coralNeon.withValues(
-                  alpha: isDark
-                      ? (0.28 + 0.12 * glowFactor)
-                      : (0.16 + 0.08 * glowFactor),
-                ),
-                blurRadius: 26 + 6 * glowFactor,
-                spreadRadius: 2,
-                offset: const Offset(5, 4),
-              ),
-              // Bóng đổ chiều sâu tổng thể
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.1),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Họa tiết nền viền mờ tinh tế
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.cyanNeon.withValues(alpha: 0.6),
-                        AppColors.coralNeon.withValues(alpha: 0.6),
-                      ],
-                    ),
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _LogoGridPainter(
+                    color: Colors.white.withValues(alpha: 0.12),
                   ),
                 ),
               ),
-              // Vẽ X và O với chiều cao bằng nhau chính xác
               CustomPaint(
-                size: Size(size * 0.76, size * 0.52),
+                size: Size(size * 0.78, size * 0.52),
                 painter: _XOLogoPainter(isDark: isDark),
+              ),
+              Positioned(
+                right: size * 0.13,
+                top: size * 0.12,
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: size * 0.13,
+                ),
               ),
             ],
           ),
@@ -126,6 +101,29 @@ class _XOLogoWidgetState extends State<XOLogoWidget>
       },
     );
   }
+}
+
+class _LogoGridPainter extends CustomPainter {
+  final Color color;
+
+  const _LogoGridPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    final spacing = size.width / 4;
+    for (var i = 1; i < 4; i++) {
+      final offset = spacing * i;
+      canvas.drawLine(Offset(offset, 0), Offset(offset, size.height), paint);
+      canvas.drawLine(Offset(0, offset), Offset(size.width, offset), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LogoGridPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class _XOLogoPainter extends CustomPainter {
@@ -137,23 +135,21 @@ class _XOLogoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Chiều cao bằng nhau tuyệt đối cho cả X và O:
     final symbolHeight = size.height; // Chiều cao = size.height
-    final strokeW = symbolHeight * 0.17; // Độ dày nét đồng đều (khoảng 8.5px)
+    final strokeW = symbolHeight * 0.14;
 
     // Chiều rộng của X và đường kính của O:
-    final xWidth = symbolHeight * 0.92;
-    final oDiameter =
-        symbolHeight; // Hình tròn hoàn hảo có đường kính = symbolHeight
+    final xWidth = symbolHeight * 0.78;
+    final oDiameter = symbolHeight * 0.78;
 
     // Tổng chiều rộng của cụm XO và khoảng cách bố cục
-    final overlap =
-        symbolHeight * 0.14; // Giao thoa nhẹ tạo cảm giác gắn kết logo
-    final totalWidth = xWidth + oDiameter - overlap;
+    final gap = symbolHeight * 0.13;
+    final totalWidth = xWidth + oDiameter + gap;
     final startX = (size.width - totalWidth) / 2;
     final startY = 0.0;
 
     final xRect = Rect.fromLTWH(startX, startY, xWidth, symbolHeight);
     final oRect = Rect.fromLTWH(
-      startX + xWidth - overlap,
+      startX + xWidth + gap,
       startY,
       oDiameter,
       symbolHeight,
@@ -263,16 +259,6 @@ class _XOLogoPainter extends CustomPainter {
     );
 
     // 3. Điểm nhấn tâm giao thoa (Sparkle / Energy Core)
-    final sparkCenter = Offset(
-      startX + xWidth - overlap * 0.5,
-      startY + symbolHeight * 0.5,
-    );
-    final sparkPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.85)
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
-
-    canvas.drawCircle(sparkCenter, strokeW * 0.22, sparkPaint);
   }
 
   @override

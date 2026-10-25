@@ -47,6 +47,7 @@ class _GameScreenState extends State<GameScreen> {
     final status = widget.gameController.status;
     if ((status == GameStatus.won || status == GameStatus.draw) && !_dialogShown) {
       _dialogShown = true;
+      widget.settingsController.loadStats();
       // Trì hoãn một chút để người chơi chiêm ngưỡng đường gạch thắng
       Future.delayed(const Duration(milliseconds: 650), () {
         if (mounted) {
@@ -115,8 +116,10 @@ class _GameScreenState extends State<GameScreen> {
         return Scaffold(
           backgroundColor: themeCfg.backgroundColor,
           appBar: AppBar(
+            toolbarHeight: 84,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            titleSpacing: 0,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
@@ -127,14 +130,15 @@ class _GameScreenState extends State<GameScreen> {
             ),
             title: Column(
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
                   children: [
                     NeonBadge(
                       text: '${config.boardSize}x${config.boardSize}',
                       color: AppColors.cyanNeon,
                     ),
-                    const SizedBox(width: 8),
                     NeonBadge(
                       text: 'Thắng ${config.winLength} quân',
                       color: AppColors.coralNeon,
@@ -241,32 +245,37 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ),
 
-                // AI Thinking indicator
-                if (widget.gameController.isAiThinking)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.cyanNeon),
+                // Reserve the same space while the AI is idle and thinking,
+                // so the board viewport never changes height between turns.
+                SizedBox(
+                  height: 38,
+                  child: widget.gameController.isAiThinking
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 10.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cyanNeon),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'AI đang tính toán nước đi...',
+                                style: AppStyles.bodyMedium(color: AppColors.cyanNeon).copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'AI đang tính toán nước đi...',
-                          style: AppStyles.bodyMedium(color: AppColors.cyanNeon).copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        )
+                      : null,
+                ),
 
                 // Center Interactive Board
                 Expanded(

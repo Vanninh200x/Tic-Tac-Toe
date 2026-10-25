@@ -202,13 +202,15 @@ class GameOverDialog extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppDimens.radiusLarge),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 10),
                     ),
-                    icon: const Icon(Icons.remove_red_eye_outlined, size: 20),
+                    icon: const Icon(Icons.remove_red_eye_outlined, size: 23),
                     label: Text(
                       'Xem Lại',
                       style: AppStyles.bodyMedium(color: textColor).copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.15,
                       ),
                     ),
                     onPressed: onReviewBoard,
@@ -226,13 +228,15 @@ class GameOverDialog extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppDimens.radiusLarge),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 10),
                     ),
-                    icon: const Icon(Icons.home_outlined, size: 20),
+                    icon: const Icon(Icons.home_outlined, size: 23),
                     label: Text(
                       'Menu',
                       style: AppStyles.bodyMedium(color: textColor).copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.15,
                       ),
                     ),
                     onPressed: onHome,

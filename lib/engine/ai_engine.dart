@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import '../models/game_enums.dart';
 import '../models/game_models.dart';
 import 'ai_heuristic.dart';
@@ -165,12 +166,37 @@ class AIEngine {
       return getMinimax3x3(board, aiPlayer, difficulty);
     }
 
-    return AIHeuristicEngine.getBestMoveLargeBoard(
-      board: board,
-      aiPlayer: aiPlayer,
-      difficulty: difficulty,
-      winLength: winLength,
-      blockedEndsRule: blockedEndsRule,
-    );
+    final result = await compute(_largeBoardMoveWorker, {
+      'board': board
+          .map((row) => row.map((cell) => cell?.index ?? -1).toList())
+          .toList(),
+      'player': aiPlayer.index,
+      'difficulty': difficulty.index,
+      'winLength': winLength,
+      'blockedEndsRule': blockedEndsRule,
+    });
+
+    return result == null ? null : CellCoord(result[0], result[1]);
   }
+}
+
+List<int>? _largeBoardMoveWorker(Map<String, Object> input) {
+  final encodedBoard = input['board'] as List<List<int>>;
+  final board = encodedBoard
+      .map(
+        (row) => row
+            .map<PlayerType?>((cell) => cell < 0 ? null : PlayerType.values[cell])
+            .toList(),
+      )
+      .toList();
+
+  final move = AIHeuristicEngine.getBestMoveLargeBoard(
+    board: board,
+    aiPlayer: PlayerType.values[input['player'] as int],
+    difficulty: AIDifficulty.values[input['difficulty'] as int],
+    winLength: input['winLength'] as int,
+    blockedEndsRule: input['blockedEndsRule'] as bool,
+  );
+
+  return move == null ? null : [move.row, move.col];
 }

@@ -39,17 +39,22 @@ class _InteractiveBoardState extends State<InteractiveBoard> {
   }
 
   double _calculateCellSize(int boardSize, double availableWidth) {
-    if (boardSize <= 3) {
-      return (availableWidth - 40) / 3;
-    } else if (boardSize <= 5) {
-      return (availableWidth - 40) / 5;
-    } else if (boardSize <= 10) {
-      return 52.0;
-    } else if (boardSize <= 15) {
-      return 46.0;
-    } else {
-      return 42.0;
-    }
+    // Fit the complete board in the viewport initially. InteractiveViewer
+    // still lets the player zoom in for larger boards.
+    final coordinateOffset = widget.settingsController.showCoordinates ? 24.0 : 8.0;
+    final gridWidth = (availableWidth - coordinateOffset * 2).clamp(0.0, double.infinity);
+    final fitCellSize = gridWidth / boardSize;
+
+    // Keep small boards comfortable to tap while ensuring 20x20 starts with
+    // all rows and columns visible instead of clipping the right/bottom edge.
+    final preferredCellSize = switch (boardSize) {
+      <= 3 => 96.0,
+      <= 5 => 64.0,
+      <= 10 => 52.0,
+      <= 15 => 46.0,
+      _ => 42.0,
+    };
+    return fitCellSize.clamp(1.0, preferredCellSize);
   }
 
   void _handleTapUp(TapUpDetails details, double cellSize, double coordOffset, int boardSize) {

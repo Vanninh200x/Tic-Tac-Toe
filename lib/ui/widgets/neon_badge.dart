@@ -17,18 +17,18 @@ class NeonBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: color.withValues(alpha: 0.4),
-          width: 1.0,
+          width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 10,
           ),
         ],
       ),
@@ -36,15 +36,16 @@ class NeonBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 4),
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 7),
           ],
           Text(
             text,
             style: AppStyles.bodySmall().copyWith(
               color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              letterSpacing: 0.2,
             ),
           ),
         ],

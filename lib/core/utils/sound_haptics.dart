@@ -20,9 +20,12 @@ class SoundHapticsHelper {
     if (!soundEnabled) return;
     try {
       final player = _getSfxPlayer();
-      player.stop().then((_) {
-        player.play(AssetSource(path));
-      }).catchError((_) {});
+      player
+          .stop()
+          .then((_) {
+            player.play(AssetSource(path));
+          })
+          .catchError((_) {});
     } catch (_) {}
   }
 
@@ -30,9 +33,12 @@ class SoundHapticsHelper {
     if (!soundEnabled) return;
     try {
       final player = _getChimePlayer();
-      player.stop().then((_) {
-        player.play(AssetSource(path));
-      }).catchError((_) {});
+      player
+          .stop()
+          .then((_) {
+            player.play(AssetSource(path));
+          })
+          .catchError((_) {});
     } catch (_) {}
   }
 

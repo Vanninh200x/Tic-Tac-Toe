@@ -159,27 +159,21 @@ class AIHeuristicEngine {
         }
       }
 
-      // Chấm điểm theo số quân liên tiếp và số đầu mở
-      if (count >= winLength) {
-        totalScore += scoreWin;
-      } else if (count == winLength - 1) {
-        if (openEnds == 2) {
-          totalScore += scoreOpenFour;
-        } else if (openEnds == 1) {
-          totalScore += scoreClosedFour;
-        }
-      } else if (count == winLength - 2) {
-        if (openEnds == 2) {
-          totalScore += scoreOpenThree;
-        } else if (openEnds == 1) {
-          totalScore += scoreClosedThree;
-        }
-      } else if (count == winLength - 3) {
-        if (openEnds == 2) {
-          totalScore += scoreOpenTwo;
-        } else if (openEnds == 1) {
-          totalScore += scoreClosedTwo;
-        }
+      // Scale the pattern value with the configured target. The previous
+      // fixed "four/three/two" mapping skipped or misranked patterns for
+      // three- and four-in-a-row games.
+      final remaining = winLength - count;
+      final patternScore = switch (remaining) {
+        <= 0 => scoreWin,
+        1 => scoreOpenFour,
+        2 => scoreOpenThree,
+        3 => scoreOpenTwo,
+        _ => 10,
+      };
+      if (openEnds == 2) {
+        totalScore += patternScore;
+      } else if (openEnds == 1) {
+        totalScore += (patternScore / 6).round();
       }
     }
 

@@ -30,6 +30,8 @@ class GameController extends ChangeNotifier {
 
   Timer? _matchTimer;
   int _matchDurationSeconds = 0;
+  int _aiRequestId = 0;
+  int _hintRequestId = 0;
 
   GameController({
     required this.storageService,
@@ -74,6 +76,8 @@ class GameController extends ChangeNotifier {
   }
 
   void _startNewMatch() {
+    _aiRequestId++;
+    _hintRequestId++;
     _turnTimer?.cancel();
     _matchTimer?.cancel();
 
@@ -140,6 +144,8 @@ class GameController extends ChangeNotifier {
     if (_status != GameStatus.playing) return false;
     if (!GameEngine.isValidMove(_board, coord)) return false;
 
+    _hintRequestId++;
+
     // Đặt quân cờ
     _board[coord.row][coord.col] = _currentTurn;
     _lastMove = coord;
@@ -176,7 +182,7 @@ class GameController extends ChangeNotifier {
       }
 
       SoundHapticsHelper.playWinFeedback();
-      _saveHistoryRecord(win.winner);
+      await _saveHistoryRecord(win.winner);
       notifyListeners();
       return true;
     }
@@ -189,7 +195,7 @@ class GameController extends ChangeNotifier {
       _sessionDraws++;
 
       SoundHapticsHelper.playDrawFeedback();
-      _saveHistoryRecord(null);
+      await _saveHistoryRecord(null);
       notifyListeners();
       return true;
     }
@@ -210,16 +216,37 @@ class GameController extends ChangeNotifier {
   /// Xử lý AI tính toán và đánh cờ
   Future<void> _triggerAiMove() async {
     if (_status != GameStatus.playing) return;
+    final boardAtStart = GameEngine.cloneBoard(_board);
+    final turnAtStart = _currentTurn;
+    final requestId = ++_aiRequestId;
     _isAiThinking = true;
     notifyListeners();
 
     final aiMove = await AIEngine.getBestMove(
-      board: _board,
+      board: boardAtStart,
       aiPlayer: _currentTurn,
       difficulty: _config.aiDifficulty,
       winLength: _config.winLength,
       blockedEndsRule: _config.blockedEndsRule,
     );
+
+    // Ignore a result computed for a previous match or turn.
+    if (requestId != _aiRequestId) return;
+    if (_status != GameStatus.playing || turnAtStart != _currentTurn) {
+      _isAiThinking = false;
+      notifyListeners();
+      return;
+    }
+    // Board changes while the request is in flight mean the result is stale.
+    for (var row = 0; row < _board.length; row++) {
+      for (var col = 0; col < _board[row].length; col++) {
+        if (boardAtStart[row][col] != _board[row][col]) {
+          _isAiThinking = false;
+          notifyListeners();
+          return;
+        }
+      }
+    }
 
     _isAiThinking = false;
 
@@ -231,23 +258,29 @@ class GameController extends ChangeNotifier {
   /// Gợi ý nước đi tốt nhất cho người chơi
   Future<void> requestHint() async {
     if (_status != GameStatus.playing || _isAiThinking) return;
+    final requestId = ++_hintRequestId;
+    final boardAtRequest = GameEngine.cloneBoard(_board);
+    final turnAtRequest = _currentTurn;
 
     final hint = await AIEngine.getBestMove(
-      board: _board,
+      board: boardAtRequest,
       aiPlayer: _currentTurn,
       difficulty: AIDifficulty.master,
       winLength: _config.winLength,
       blockedEndsRule: _config.blockedEndsRule,
     );
 
-    if (hint != null) {
+    if (requestId == _hintRequestId &&
+        _status == GameStatus.playing &&
+        _currentTurn == turnAtRequest &&
+        hint != null) {
       _hintMove = hint;
       SoundHapticsHelper.playButtonFeedback();
       notifyListeners();
 
       // Tự động tắt gợi ý sau 4 giây
       Future.delayed(const Duration(seconds: 4), () {
-        if (_hintMove == hint) {
+        if (_hintRequestId == requestId && _hintMove == hint) {
           _hintMove = null;
           notifyListeners();
         }
@@ -258,6 +291,11 @@ class GameController extends ChangeNotifier {
   /// Đi lại (Undo nước đi)
   void undoMove() {
     if (_moveHistory.isEmpty || _status == GameStatus.won) return;
+
+    // Invalidate any AI/hint result calculated for the board before undo.
+    _aiRequestId++;
+    _hintRequestId++;
+    _isAiThinking = false;
 
     if (_config.mode == GameMode.vsAI) {
       // Khi đấu với máy: Rút lại 2 nước (nước của máy + nước của người)
@@ -288,8 +326,8 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _saveHistoryRecord(PlayerType? winner) {
-    storageService.recordGameResult(
+  Future<void> _saveHistoryRecord(PlayerType? winner) {
+    return storageService.recordGameResult(
       mode: _config.mode,
       boardSize: _config.boardSize,
       winLength: _config.winLength,
@@ -301,6 +339,8 @@ class GameController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _aiRequestId++;
+    _hintRequestId++;
     _turnTimer?.cancel();
     _matchTimer?.cancel();
     super.dispose();

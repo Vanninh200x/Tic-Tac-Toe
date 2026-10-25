@@ -109,8 +109,10 @@ class HomeScreen extends StatelessWidget {
                         child: Text(
                           'Đã chơi: ${stats.totalGames} trận  •  Tỉ lệ thắng: ${stats.winRatePercent.toStringAsFixed(0)}%',
                           style: AppStyles.bodyMedium(
-                            color: AppColors.cyanNeon,
-                          ).copyWith(fontWeight: FontWeight.w700, fontSize: 14),
+                            color: isDark
+                                ? const Color(0xFF8FC4E8)
+                                : const Color(0xFF47779F),
+                          ).copyWith(fontWeight: FontWeight.w800, fontSize: 16),
                         ),
                       ),
 
@@ -174,7 +176,7 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.bluetooth_searching_rounded,
                       gradient: const [Color(0xFF8B5CF6), Color(0xFFD946EF)],
                       glowColor: const Color(0xFFD946EF),
-                      badgeText: 'Demo',
+                      badgeText: '',
                       isDark: isDark,
                       primaryTextColor: themeCfg.primaryTextColor,
                       secondaryTextColor: themeCfg.secondaryTextColor,
@@ -344,17 +346,21 @@ class HomeScreen extends StatelessWidget {
                           title,
                           style: AppStyles.headingSmall(
                             color: primaryTextColor,
-                          ).copyWith(fontSize: 16, fontWeight: FontWeight.w900),
+                        ).copyWith(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0.15),
                         ),
                       ),
-                      NeonBadge(text: badgeText, color: glowColor),
+                      if (badgeText.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: NeonBadge(text: badgeText, color: glowColor),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 5),
                   Text(
                     subtitle,
                     style: AppStyles.bodyMedium(color: secondaryTextColor)
-                        .copyWith(fontSize: 14),
+                        .copyWith(fontSize: 16, height: 1.4),
                   ),
                 ],
               ),

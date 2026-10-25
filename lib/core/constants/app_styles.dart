@@ -5,7 +5,7 @@ import 'app_colors.dart';
 class AppStyles {
   // Heading styles
   static TextStyle headingLarge({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 34,
         fontWeight: FontWeight.w900,
         color: color,
@@ -13,7 +13,7 @@ class AppStyles {
       );
 
   static TextStyle headingMedium({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 26,
         fontWeight: FontWeight.w800,
         color: color,
@@ -21,7 +21,7 @@ class AppStyles {
       );
 
   static TextStyle headingSmall({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: color,
@@ -29,7 +29,7 @@ class AppStyles {
 
   // Body styles - Đủ to để đọc rõ ràng từ xa
   static TextStyle bodyLarge({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: color,
@@ -37,7 +37,7 @@ class AppStyles {
       );
 
   static TextStyle bodyMedium({Color color = Colors.white70}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: color,
@@ -45,7 +45,7 @@ class AppStyles {
       );
 
   static TextStyle bodySmall({Color color = Colors.white60}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: color,
@@ -53,7 +53,7 @@ class AppStyles {
 
   // Button styles 
   static TextStyle buttonText({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 18,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.6,
@@ -62,7 +62,7 @@ class AppStyles {
 
   // Scoreboard Number
   static TextStyle scoreNumber({Color color = Colors.white}) =>
-      GoogleFonts.montserrat(
+      GoogleFonts.manrope(
         fontSize: 38,
         fontWeight: FontWeight.w900,
         color: color,

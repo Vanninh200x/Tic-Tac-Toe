@@ -40,16 +40,6 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
   void initState() {
     super.initState();
     _mode = widget.initialMode;
-    _selectPreset(BoardPreset.size3x3);
-  }
-
-  void _selectPreset(BoardPreset preset) {
-    setState(() {
-      if (preset != BoardPreset.custom) {
-        _boardSize = preset.size;
-        _winLength = preset.defaultWinLength;
-      }
-    });
   }
 
   void _startGame() {
@@ -117,19 +107,13 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
             children: [
               // 1. Chọn Kích thước bàn cờ
               _sectionHeader('KÍCH THƯỚC BÀN CỜ', Icons.grid_view_rounded, themeCfg),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _presetChip('3 × 3 (Caro 3)', 3, 3, isDark),
-                  _presetChip('5 × 5 (Caro mini)', 5, 4, isDark),
-                  _presetChip('10 × 10 (Chuẩn)', 10, 5, isDark),
-                  _presetChip('15 × 15 (Gomoku)', 15, 5, isDark),
-                  _presetChip('20 × 20 (Rộng)', 20, 5, isDark),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                'Chọn mọi kích thước từ 3×3 đến 20×20',
+                style: AppStyles.bodySmall(color: themeCfg.secondaryTextColor)
+                    .copyWith(fontSize: 16, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               // Slider tùy chỉnh kích thước bàn cờ
               GlassCard(
@@ -138,43 +122,94 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Tùy chỉnh cỡ bàn cờ:',
-                          style: AppStyles.bodyLarge(color: themeCfg.primaryTextColor).copyWith(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CỠ BÀN CỜ',
+                                style: AppStyles.bodySmall(
+                                  color: themeCfg.secondaryTextColor,
+                                ).copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _boardSizeDescription(_boardSize),
+                                style: AppStyles.bodyMedium(
+                                  color: themeCfg.primaryTextColor,
+                                ).copyWith(fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
+                            ],
                           ),
                         ),
                         Text(
-                          '${_boardSize}x$_boardSize',
-                          style: AppStyles.headingMedium(color: AppColors.cyanNeon).copyWith(
-                            fontSize: 26,
+                          '$_boardSize × $_boardSize',
+                          style: AppStyles.headingMedium(
+                            color: const Color(0xFF111827),
+                          ).copyWith(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Slider(
-                      value: _boardSize.toDouble(),
-                      min: 3,
-                      max: 20,
-                      divisions: 17,
-                      activeColor: AppColors.cyanNeon,
-                      inactiveColor: isDark ? Colors.white12 : const Color(0xFFCBD5E1),
-                      onChanged: (val) {
-                        setState(() {
-                          _boardSize = val.round();
-                          if (_boardSize == 3) {
-                            _winLength = 3;
-                          } else if (_boardSize < 6) {
-                            _winLength = min(_winLength, 4);
-                          } else {
-                            _winLength = 5;
-                          }
-                        });
-                      },
+                    const SizedBox(height: 16),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 8,
+                        activeTrackColor: const Color(0xFF638FB6),
+                        inactiveTrackColor: isDark
+                            ? Colors.white.withValues(alpha: 0.14)
+                            : const Color(0xFFDCE5F0),
+                        activeTickMarkColor: Colors.white.withValues(alpha: 0.8),
+                        inactiveTickMarkColor: isDark
+                            ? Colors.white.withValues(alpha: 0.42)
+                            : const Color(0xFF94A3B8),
+                        thumbColor: Colors.white,
+                        overlayColor: const Color(0xFF638FB6).withValues(alpha: 0.12),
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 13,
+                          elevation: 4,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 23),
+                        tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.2),
+                      ),
+                      child: Slider(
+                        value: _boardSize.toDouble(),
+                        min: 3,
+                        max: 20,
+                        divisions: 17,
+                        semanticFormatterCallback: (value) =>
+                            '${value.round()} × ${value.round()}',
+                        onChanged: (val) {
+                          setState(() {
+                            _boardSize = val.round();
+                            if (_boardSize == 3) {
+                              _winLength = 3;
+                            } else if (_boardSize < 6) {
+                              _winLength = min(_winLength, 4);
+                            } else {
+                              _winLength = 5;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _sliderEndLabel('3 × 3', isDark),
+                          _sliderEndLabel('20 × 20', isDark),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -186,11 +221,11 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _winLengthButton(3, '3 Quân liên tiếp', enabled: _boardSize >= 3, isDark: isDark),
+                  _winLengthButton(3, enabled: _boardSize >= 3, isDark: isDark),
                   const SizedBox(width: 10),
-                  _winLengthButton(4, '4 Quân liên tiếp', enabled: _boardSize >= 4, isDark: isDark),
+                  _winLengthButton(4, enabled: _boardSize >= 4, isDark: isDark),
                   const SizedBox(width: 10),
-                  _winLengthButton(5, '5 Quân (Chuẩn)', enabled: _boardSize >= 5, isDark: isDark),
+                  _winLengthButton(5, enabled: _boardSize >= 5, isDark: isDark),
                 ],
               ),
               const SizedBox(height: 24),
@@ -364,51 +399,49 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
   Widget _sectionHeader(String title, IconData icon, ThemeConfig themeCfg) {
     return Row(
       children: [
-        Icon(icon, size: 22, color: AppColors.cyanNeon),
+        Icon(icon, size: 23, color: const Color(0xFF5685AE)),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: AppStyles.headingSmall(color: themeCfg.primaryTextColor).copyWith(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyles.headingSmall(color: themeCfg.primaryTextColor).copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.35,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _presetChip(String label, int size, int win, bool isDark) {
-    final isSelected = _boardSize == size && _winLength == win;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: AppColors.cyanNeon.withValues(alpha: isDark ? 0.3 : 0.15),
-      backgroundColor: isDark ? const Color(0xFF1E294B) : Colors.white,
-      side: BorderSide(
-        color: isSelected ? AppColors.cyanNeon : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
-        width: isSelected ? 2.0 : 1.2,
-      ),
-      labelStyle: TextStyle(
-        color: isSelected ? AppColors.cyanNeon : (isDark ? Colors.white : const Color(0xFF0F172A)),
-        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-        fontSize: 15,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      onSelected: (_) => setState(() {
-        _boardSize = size;
-        _winLength = win;
-      }),
+  String _boardSizeDescription(int size) => switch (size) {
+    3 => 'Tic-Tac-Toe cổ điển',
+    4 => 'Caro 4 × 4',
+    5 => 'Caro mini',
+    <= 10 => 'Caro tiêu chuẩn',
+    <= 15 => 'Gomoku',
+    _ => 'Bàn cờ rộng',
+  };
+
+  Widget _sliderEndLabel(String label, bool isDark) {
+    return Text(
+      label,
+      style: AppStyles.bodySmall(
+        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+      ).copyWith(fontSize: 13, fontWeight: FontWeight.w700),
     );
   }
 
-  Widget _winLengthButton(int length, String label, {required bool enabled, required bool isDark}) {
+  Widget _winLengthButton(int length, {required bool enabled, required bool isDark}) {
     final isSelected = _winLength == length;
     return Expanded(
       child: GestureDetector(
         onTap: enabled ? () => setState(() => _winLength = length) : null,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 4),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.coralNeon.withValues(alpha: isDark ? 0.25 : 0.12)
@@ -440,16 +473,16 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                   color: enabled
                       ? (isSelected ? AppColors.coralNeon : (isDark ? Colors.white : const Color(0xFF0F172A)))
                       : Colors.grey.shade400,
-                ).copyWith(fontSize: 28),
+                ).copyWith(fontSize: 32, height: 1.0, fontWeight: FontWeight.w900),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 6),
               Text(
-                'Quân',
+                'QUÂN',
                 style: AppStyles.bodyMedium(
                   color: enabled
                       ? (isDark ? Colors.white70 : const Color(0xFF64748B))
                       : Colors.grey.shade400,
-                ).copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+                ).copyWith(fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.6),
               ),
             ],
           ),
